@@ -36,15 +36,15 @@ rho_silt = (1-si_phi) * rho_particle + (si_phi * rho_air);
 % material properties for each rock unit (update based on your calibration)
 matprop = [
 % unit conductivity(kT) density(rho0) heat capacity(Cp) heat production(Hr)
-1       3.678               2697.6      845                 4.172   %HE1
-2       1                   2000        1000                1       %Gneiss
-3       1                   rho_sand    830                 1       %Sand
-4       3.218               2703.5      845                 5.575   %HE2
-5       1                   rho_grav    1000                1       %Gravel
-6       1                   2000        1381                1       %Clay
-7       1                   rho_silt    1000                1       %Silt
-8       1                   2000        2512                1       %Mud
-9       1e-6                rho_air     1000                0];     % air/water
+1       3.678               2697.6      845                 4.172                %HE1
+2       1                   2800        1000                1                    %Gneiss
+3       1                   rho_sand    830                 (1-sa_phi)*1         %Sand
+4       3.218               2703.5      845                 5.575                %HE2
+5       1                   rho_grav    1000                (1-gr_phi)*0.6       %Gravel
+6       1                   1760        1381                2.75                 %Clay (Wet)
+7       1                   rho_silt    1000                (1-si_phi)*1.4       %Silt
+8       1                   2000        2512                3.5                  %Mud
+9       1e-6                rho_air     1000                0];                  %air/water
   
 % get coefficient fields based on spatial distribution of rock units from image
 switch TEST
@@ -83,7 +83,7 @@ aT = 1e-4; % thermal expansivity [1/C]
 
 yr = 60*60*24*365; % seconds per year [s]
 tend = 3e6*yr; % stopping time [s]
-CFL = 0.5; % Time step limiter decreasing this will increase the time step, on short scale less accurate on long scale quicker
+CFL = 0.95; % Time step limiter decreasing this will increase the time step, on short scale less accurate on long scale quicker
 nop = 100; % output figure produced every 'nop' steps
 
 
