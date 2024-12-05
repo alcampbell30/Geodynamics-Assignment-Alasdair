@@ -18,14 +18,6 @@ ix3 = [ 1,1:Nx,Nx ];
 %Set up Insulating Top and Bottom
 iz3 = [ 1,1:Nz,Nz ];
 
-
-% create smooth random perturbation field
-rng(15);
-dr = randn(Nz,Nx);
-for ii = 1:10
-dr = dr + (diff(dr(iz3,:),2,1) + diff(dr(:,ix3),2,2))/8;
-end
-
 % set initial condition for temperature at cell centres
 T = Ttop + geotherm.*Zc; % initialise T array on linear gradient
 T(air) = Ttop;
