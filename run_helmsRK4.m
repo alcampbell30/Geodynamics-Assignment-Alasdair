@@ -4,13 +4,14 @@ clear all; close all; %clc;
 
 %Declare whether or not this is a test run. Switching this on will switch to constant coefficient variant. 
 TEST = 'NO';
+convergence = 'Space';
 NN = [100,200,400];
 
 for nn = 1:3
 
 % load model setup from image, interpolate to target grid size
 W = 16e3; % domain width (must correspond to width of image) [m]
-Nx = NN(nn); % target grid size z-direction
+Nx = 400; % target grid size z-direction
 h = W/Nx; % grid spacing based on image width and target grid size
 n_units = 9; % number of rock units contained in image
 [units,D,Nz] = ModelFromImage('section.tiff',n_units,W,Nx);
@@ -38,16 +39,16 @@ rho_silt = (1-si_phi) * rho_particle + (si_phi * rho_air);
 
 % material properties for each rock unit (update based on your calibration)
 matprop = [
-% unit conductivity(kT) density(rho0) sp. heat capacity(Cp)   heat production(Hr)
-1       3.678               2697.6      845                   4.172e-6              %HE1
-2       2.467               2750        775                   5.7e-6                %Gneiss 
-3       3.218               2703.5      845                   5.575e-6              %HE2
-4       0.272               rho_sand    830                   1e-6                  %Sand
-5       1.075               rho_grav    1000                  1e-6                  %Gravel
-6       1.3                 2000        1381                  1e-6                  %Clay (sea)
-7       2.49                rho_silt    1000                  1e-6                  %Silt
-8       0.61                2000        2512                  1e-6                  %Mud (Sea)
-9       1e-6                rho_air     1012                  0];                   %air/water
+% unit conductivity(kT) density(rho0)   sp. heat capacity(Cp)   heat production(Hr)
+1       3.678               2697.6        1000                  4.172e-6              %HE1
+2       2.467               2750          874.5                 2.9e-6                %Gneiss 
+3       3.218               2703.5        1000                  5.575e-6              %HE2
+4       0.272               rho_sand      932                   1e-6                  %Sand 932 Cp
+5       1.075               rho_grav      566                   1e-6                  %Gravel 566 Cp
+6       1.3                 2091.8        878                   1e-6                  %Clay (sea)
+7       2.49                rho_silt          1088                  1e-6                  %Silt
+8       0.61                1860          1510                  1e-6                  %Mud (Sea) (average 2512 Cp for wet mud and values for silt and sand)
+9       1e-6                rho_air       1012                  0];                   %air/water
 
   
 % get coefficient fields based on spatial distribution of rock units from image
@@ -78,10 +79,8 @@ kT0 = sigma*1000./a;
 % continue setting remaining model parameters, then call model routine
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Ttop = 10; % surface temperature
+Ttop = 8; % surface temperature
 Tbot = Ttop + D*geotherm(2); %Temperature at the bottom of the domain using geotherm gradient
-%rho0 = 1000; % reference density [kg/m3]
-%kT0 = 1e-6; % Set an initial value of heat diffusivity that is to be used [m2/s]
 cT = 1e-9; % kT T-dependence prefactor
 mT = 2; % kT T-dependence powerlaw
 g0 = 9.8; % gravity [m/s2]
@@ -97,33 +96,42 @@ dTdto = 0;
 run('./helmsRK4.m');
 end
 
-%Plot numerical error
-Ex(nn)  = Errx;
-Dh(nn) = h;
+switch convergence
+    case Space
 
-%plot numerical error in x 
-figure(); 
-loglog(Dh,Ex,'ro','LineWidth',1.5,'MarkerSize',8); axis tight; box on; hold on
-loglog(Dh,Ex(1).*[1,1/2,1/4].^1,'k-','LineWidth',0.7)
-loglog(Dh,Ex(1).*[1,1/2,1/4].^2,'k-','LineWidth',0.9)
-loglog(Dh,Ex(1).*[1,1/2,1/4].^3,'k-','LineWidth',1.1)
-loglog(Dh,Ex(1).*[1,1/2,1/4].^4,'k-','LineWidth',1.3)
-loglog(Dh,Ex(1).*[1,1/2,1/4].^5,'k-','LineWidth',1.5)
-xlabel('Step size','FontSize',18)
-ylabel('Numerical error','FontSize',18)
-title('Numerical Convergence in Space','FontSize',20)
 
-Ez(nn)  = Errz;
-Dt(nn) = t;
+        %Plot numerical error (spacial)
+        Ex(nn)  = Errx;
+        Ez(nn)  = Errz;
+        Dh(nn)  = h;
+        
+        %plot numerical error in x 
+        figure(); 
+        loglog(Dh,Ex,'ro','LineWidth',1.5,'MarkerSize',8); axis tight; box on; hold on
+        loglog(Dh,Ex(1).*[1,1/2,1/4].^1,'k-','LineWidth',0.7)
+        loglog(Dh,Ex(1).*[1,1/2,1/4].^2,'k-','LineWidth',0.9)
+        loglog(Dh,Ex(1).*[1,1/2,1/4].^3,'k-','LineWidth',1.1)
+        loglog(Dh,Ex(1).*[1,1/2,1/4].^4,'k-','LineWidth',1.3)
+        loglog(Dh,Ex(1).*[1,1/2,1/4].^5,'k-','LineWidth',1.5)
+        xlabel('Step size','FontSize',18)
+        ylabel('Numerical error','FontSize',18)
+        title('Numerical Convergence in Space','FontSize',20)
+        
+        %error in z direction (spacial)
+        figure(); 
+        loglog(Dh,Ez,'ro','LineWidth',1.5,'MarkerSize',8); axis tight; box on; hold on
+        loglog(Dh,Ez(1).*[1,1/2,1/4].^1,'k-','LineWidth',0.7)
+        loglog(Dh,Ez(1).*[1,1/2,1/4].^2,'k-','LineWidth',0.9)
+        loglog(Dh,Ez(1).*[1,1/2,1/4].^3,'k-','LineWidth',1.1)
+        loglog(Dh,Ez(1).*[1,1/2,1/4].^4,'k-','LineWidth',1.3)
+        loglog(Dh,Ez(1).*[1,1/2,1/4].^5,'k-','LineWidth',1.5)
+        xlabel('Step size','FontSize',18)
+        ylabel('Numerical error','FontSize',18)
+        title('Numerical Convergence in Space','FontSize',20)
+    
 
-%plot numerical error in z
-figure(); 
-loglog(Dt,Ez,'ro','LineWidth',1.5,'MarkerSize',8); axis tight; box on; hold on
-loglog(Dt,Ez(1).*[1,1/2,1/4].^1,'k-','LineWidth',0.7)
-loglog(Dt,Ez(1).*[1,1/2,1/4].^2,'k-','LineWidth',0.9)
-loglog(Dt,Ez(1).*[1,1/2,1/4].^3,'k-','LineWidth',1.1)
-loglog(Dt,Ez(1).*[1,1/2,1/4].^4,'k-','LineWidth',1.3)
-loglog(Dt,Ez(1).*[1,1/2,1/4].^5,'k-','LineWidth',1.5)
-xlabel('Step size','FontSize',18)
-ylabel('Numerical error','FontSize',18)
-title('Numerical Convergence in Space','FontSize',20)
+    case Time
+
+        run('./time_convergence.m');
+end
+
