@@ -4,7 +4,9 @@ clear all; close all; %clc;
 
 %Declare whether or not this is a test run. Switching this on will switch to constant coefficient variant. 
 TEST = 'NO';
-convergence = 'Space';
+%Declare whether or not we wish to show that the total thermal energy in the system
+%is constant in the test case
+conservation = 'YES';
 NN = [100,200,400];
 
 for nn = 1:3
@@ -22,14 +24,14 @@ n_units = 9; % number of rock units contained in image
 
 rho_particle = 2650; % density of sediments
 rho_air = 1.225; % density of air
-sa_phi = 0.253; % sand porosity proportion
-gr_phi = 0.325; % gravel porosity proportion
-si_phi = 0.17; % silt porosity proportion
+sa_phi = 0.23; % sand porosity proportion
+gr_phi = 0.34; % gravel porosity proportion
+si_phi = 0.15; % silt porosity proportion
 
-sa_particle_kT = 8; % sand particle thermal conductivity
-gr_particle_kT = 5; % gravel particle thermal conductivity
-si_particle_kT = 3.5; % silt particle thermal conductivity
-air_kT = 0.025; % air thermal conductivity
+sa_particle_kT = 0.25; % sand particle thermal conductivity
+gr_particle_kT = 0.65; % gravel particle thermal conductivity
+si_particle_kT = 0.39; % silt particle thermal conductivity
+air_kT = 0.026; % air thermal conductivity
 
 % calculate bulk density of the sediment mass and air in the pores
 rho_sand = (1-sa_phi) * rho_particle + (sa_phi * rho_air);
@@ -43,12 +45,12 @@ matprop = [
 1       3.678               2697.6        1000                  4.172e-6              %HE1
 2       2.467               2750          874.5                 2.9e-6                %Gneiss 
 3       3.218               2703.5        1000                  5.575e-6              %HE2
-4       0.272               rho_sand      932                   1e-6                  %Sand 932 Cp
-5       1.075               rho_grav      566                   1e-6                  %Gravel 566 Cp
+4       0.25                rho_sand      932                   1e-6                  %Sand 932 Cp
+5       0.65               rho_grav      566                   1e-6                  %Gravel 566 Cp
 6       1.3                 2091.8        878                   1e-6                  %Clay (sea)
-7       2.49                rho_silt          1088                  1e-6                  %Silt
+7       0.39                rho_silt      1088                  1e-6                  %Silt
 8       0.61                1860          1510                  1e-6                  %Mud (Sea) (average 2512 Cp for wet mud and values for silt and sand)
-9       1e-6                rho_air       1012                  0];                   %air/water
+9       0.026               rho_air       1012                  0];                   %air/water
 
   
 % get coefficient fields based on spatial distribution of rock units from image
@@ -87,51 +89,22 @@ g0 = 9.8; % gravity [m/s2]
 aT = 1e-4; % thermal expansivity [1/C]
 
 yr = 60*60*24*365.25; % seconds per year [s]
-tend = 1e6*yr; % stopping time [s]
-CFL = 0.9; % Time step limiter 
+tend = 10000*yr; % stopping time [s] 1e6
+CFL = 0.25; % Time step limiter 
 nop = 100; % output figure produced every 'nop' steps
 
 dTdto = 0;
 
-run('./helmsRK4.m');
+switch conservation
+    case 'YES' 
+
+        run('./temperature_conservation_test.m');
+
+    case 'NO'
+
+         run('./helmsRK4.m');
+end 
+
 end
 
-switch convergence
-    case Space
-
-
-        %Plot numerical error (spacial)
-        Ex(nn)  = Errx;
-        Ez(nn)  = Errz;
-        Dh(nn)  = h;
-        
-        %plot numerical error in x 
-        figure(); 
-        loglog(Dh,Ex,'ro','LineWidth',1.5,'MarkerSize',8); axis tight; box on; hold on
-        loglog(Dh,Ex(1).*[1,1/2,1/4].^1,'k-','LineWidth',0.7)
-        loglog(Dh,Ex(1).*[1,1/2,1/4].^2,'k-','LineWidth',0.9)
-        loglog(Dh,Ex(1).*[1,1/2,1/4].^3,'k-','LineWidth',1.1)
-        loglog(Dh,Ex(1).*[1,1/2,1/4].^4,'k-','LineWidth',1.3)
-        loglog(Dh,Ex(1).*[1,1/2,1/4].^5,'k-','LineWidth',1.5)
-        xlabel('Step size','FontSize',18)
-        ylabel('Numerical error','FontSize',18)
-        title('Numerical Convergence in Space','FontSize',20)
-        
-        %error in z direction (spacial)
-        figure(); 
-        loglog(Dh,Ez,'ro','LineWidth',1.5,'MarkerSize',8); axis tight; box on; hold on
-        loglog(Dh,Ez(1).*[1,1/2,1/4].^1,'k-','LineWidth',0.7)
-        loglog(Dh,Ez(1).*[1,1/2,1/4].^2,'k-','LineWidth',0.9)
-        loglog(Dh,Ez(1).*[1,1/2,1/4].^3,'k-','LineWidth',1.1)
-        loglog(Dh,Ez(1).*[1,1/2,1/4].^4,'k-','LineWidth',1.3)
-        loglog(Dh,Ez(1).*[1,1/2,1/4].^5,'k-','LineWidth',1.5)
-        xlabel('Step size','FontSize',18)
-        ylabel('Numerical error','FontSize',18)
-        title('Numerical Convergence in Space','FontSize',20)
-    
-
-    case Time
-
-        run('./time_convergence.m');
-end
 
