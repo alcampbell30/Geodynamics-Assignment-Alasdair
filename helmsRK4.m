@@ -23,7 +23,7 @@ iz3 = [ 1,1:Nz,Nz ];
 T = Ttop + geotherm(2).*Zc; % initialise T array on linear gradient
 T(air) = Ttop;
 % initialise density and mobility
-rho = rho0.*(1 - aT.*(T-Ttop));
+rho = rho0;
 kT = kT0.*ones(Nz,Nx);
 
 % initialise output figure with initial condition
@@ -59,9 +59,7 @@ while t <= tend
     T = T + (dTdt1 + 2*dTdt2 + 2*dTdt3 + dTdt4)/6 * dt + Hs;
 
     T(air)=Ttop;
-
-    Tana= T + geotherm(2).*Zc;
-     
+  
 
             % plot model progress every 'nop' time steps
         if ~mod(k,nop)
@@ -121,10 +119,8 @@ function [dTdt] = diffusion(f,k,h,ix,iz,geotherm, Hr, rho, Cp)
     % calculate flux balance for rate of change
     dTdt_diffusion = - (diff(qx,1,2)/h+diff(qz,1,1)/h);
 
-    % add heat source term using Hr data from Matprop table
-    heat_source = Hr./(rho.*Cp); % Source term due to heat production.
-
+       
     % total rate of change of temperature
-    dTdt = dTdt_diffusion + heat_source;
+    dTdt = dTdt_diffusion;
 end
 
