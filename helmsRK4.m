@@ -89,7 +89,7 @@ disp(' ');
 function makefig(x,z,T)
 
     % plot temperature in subplot 1
-    imagesc(x,z,T); axis equal; c=colorbar; hold on
+    imagesc(x,z,T); axis equal; colorbar; hold on
     contour(x,z,T,[100,150,150],'k');
 
     [C, h] = contour(x, z, T, [150, 150], 'r', 'LineWidth', 2); % 150°C contour in red
@@ -97,12 +97,12 @@ function makefig(x,z,T)
 
     [C, h] = contour(x, z, T, [100, 100], 'r', 'LineWidth', 2); % 100°C contour in red
     clabel(C, h, 'FontSize', 12, 'Color', 'r'); % Optional: Label the 100°C contour
-    drawnow
-     
-    xlabel('Horizontal Distance [m]', 'FontSize',15)
-    ylabel('Depth [m]','FontSize',15)
-    ylabel(c, 'C', 'FontSize',15)
-    title('Temperature','FontSize',18)
+        
+    xlabel('Horizontal Distance [m]', 'FontSize',18)
+    ylabel('Depth [m]','FontSize',18)
+    ylabel(colorbar, 'Temperature [°C]', 'FontSize',18)
+    title('Sub Surface Temperature [°C]','FontSize',20)
+    drawnow;
 
 end
 
