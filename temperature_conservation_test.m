@@ -1,4 +1,4 @@
-%***** 2D ADVECTION DIFFUSION MODEL OF HEAT TRANSPORT *******************
+%***** 2D DIFFUSION MODEL OF HEAT TRANSPORT *******************
 %***** Initialise Model Setup
 
 %Image data obtained
@@ -51,10 +51,10 @@ while t <= tend
     To = T;
     
     % get rate of change
-    dTdt1 = diffusion(T           ,kT,h,ix3,iz3,geotherm(1), Hr, rho, Cp); %we need no geothermal gradient for this test
-    dTdt2 = diffusion(T+dTdt1/2*dt,kT,h,ix3,iz3,geotherm(1), Hr, rho, Cp);
-    dTdt3 = diffusion(T+dTdt2/2*dt,kT, h,ix3,iz3,geotherm(1), Hr, rho, Cp);
-    dTdt4 = diffusion(T+dTdt3  *dt,kT, h,ix3,iz3,geotherm(1), Hr, rho, Cp);
+    dTdt1 = diffusion(T           ,kT,h,ix3,iz3); %we need no geothermal gradient for this test
+    dTdt2 = diffusion(T+dTdt1/2*dt,kT,h,ix3,iz3);
+    dTdt3 = diffusion(T+dTdt2/2*dt,kT, h,ix3,iz3);
+    dTdt4 = diffusion(T+dTdt3  *dt,kT, h,ix3,iz3);
 
     Hs = (Hr*10^-6)./(rho.*Cp); %scale Hr to units of Watts 
 
@@ -67,16 +67,7 @@ while t <= tend
     % Store the time value at each step
     time_vals = [time_vals, t]; % Append current time to the time array
   
-    %T(air)=Ttop;
-    
-    
-     
 
-            % plot model progress every 'nop' time steps
-        %if ~mod(k,nop)
-        %    makefig(xc,zc,T);
-        %end
-    
 
 end
 
@@ -84,29 +75,8 @@ end
 
 %***** Utility Functions ************************************************
 
-% Function to make output figure
-%function makefig(x,z,T)
-%
-%    % plot temperature in subplot 1
-%    imagesc(x,z,T); axis equal; colorbar; hold on
-%    contour(x,z,T,[100,150,150],'k');
-%
-%    [C, h] = contour(x, z, T, [150, 150], 'r', 'LineWidth', 2); % 150°C contour in red
-%    clabel(C, h, 'FontSize', 12, 'Color', 'r'); % Optional: Label the 150°C contour
-%
-%    [C, h] = contour(x, z, T, [100, 100], 'r', 'LineWidth', 2); % 100°C contour in red
-%    clabel(C, h, 'FontSize', 12, 'Color', 'r'); % Optional: Label the 100°C contour
-%        
-%    xlabel('Horizontal Distance [m]', 'FontSize',18)
-%    ylabel('Depth [m]','FontSize',18)
-%    ylabel(colorbar, 'Temperature [°C]', 'FontSize',18)
-%    title('Sub Surface Temperature [°C]','FontSize',20)
-%    drawnow;
-%
-%end
-
 % Function to calculate diffusion rate
-function [dTdt] = diffusion(f,k,h,ix,iz,geotherm, Hr, rho, Cp)
+function [dTdt] = diffusion(f,k,h,ix,iz)
 % calculate heat flux by diffusion
     kx = (k(:,ix(1:end-1)) + k(:,ix(2:end)))/2; %find the heat conductivity on the cell faces / edges in x direction
     kz = (k(iz(1:end-1),:) + k(iz(2:end),:))/2; %find the heat conductivity on the cell faces / edges in z directionx
@@ -118,7 +88,7 @@ function [dTdt] = diffusion(f,k,h,ix,iz,geotherm, Hr, rho, Cp)
     dTdt_diffusion = - (diff(qx,1,2)/h+diff(qz,1,1)/h);
 
     % add heat source term using Hr data from Matprop table
-    heat_source = Hr./(rho.*Cp); % Source term due to heat production.
+    %heat_source = Hr./(rho.*Cp); % Source term due to heat production.
 
     % total rate of change of temperature
     dTdt = dTdt_diffusion;
@@ -133,7 +103,7 @@ clf
 plot(time_vals, energy_vals);
 
 xlabel('Time (s)');
-ylabel('Esum');
+ylabel('Energy sum');
 title('Sum of Energy over Time');
-ylim([1e19, 6e20])
+ylim([1e20,2e21])
 grid on;
