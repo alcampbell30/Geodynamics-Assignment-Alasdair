@@ -1,4 +1,4 @@
-%***** 2D ADVECTION DIFFUSION MODEL OF HEAT TRANSPORT *******************
+%***** 2D DIFFUSION MODEL OF HEAT TRANSPORT *******************
 %***** Initialise Model Setup
 
 %Image data obtained
@@ -49,15 +49,19 @@ while t <= tend
     To = T;
     
     % get rate of change
-    dTdt1 = diffusion(T           ,kT,h,ix3,iz3,geotherm, Hr, rho, Cp);
-    dTdt2 = diffusion(T+dTdt1/2*dt,kT,h,ix3,iz3,geotherm, Hr, rho, Cp);
-    dTdt3 = diffusion(T+dTdt2/2*dt,kT, h,ix3,iz3,geotherm, Hr, rho, Cp);
-    dTdt4 = diffusion(T+dTdt3  *dt,kT, h,ix3,iz3,geotherm, Hr, rho, Cp);
+    dTdt1 = diffusion(T           ,kT,h,ix3,iz3,geotherm);
+    dTdt2 = diffusion(T+dTdt1/2*dt,kT,h,ix3,iz3,geotherm);
+    dTdt3 = diffusion(T+dTdt2/2*dt,kT, h,ix3,iz3,geotherm);
+    dTdt4 = diffusion(T+dTdt3  *dt,kT, h,ix3,iz3,geotherm);
 
+    %Calculate Heat Source Contribution
     Hs = (Hr*10^-6)./(rho.*Cp); %scale Hr to units of Watts 
 
+    %Update temperature with all contributions
     T = T + (dTdt1 + 2*dTdt2 + 2*dTdt3 + dTdt4)/6 * dt + Hs;
 
+    %ensure that the air temperature is constant and set to the correct
+    %value
     T(air)=Ttop;
   
 
@@ -69,18 +73,6 @@ while t <= tend
 
 end
 
-        
-%*****  calculate numerical error norm
-
-Errx = norm(T - Tana,2)./norm(Tana,2); %error in x
-Errz = norm(T - Tana,1)./norm(Tana,1); %error in z
-
-
-disp(' ');
-disp('Time integration scheme: RK4')
-disp(['Numerical error in x = ',num2str(Errx)]);
-disp(['Numerical error in z = ',num2str(Errz)]);
-disp(' ');
 %***** Utility Functions ************************************************
 
 % Function to make output figure
@@ -105,7 +97,7 @@ function makefig(x,z,T)
 end
 
 % Function to calculate diffusion rate
-function [dTdt] = diffusion(f,k,h,ix,iz,geotherm, Hr, rho, Cp)
+function [dTdt] = diffusion(f,k,h,ix,iz,geotherm)
 % calculate heat flux by diffusion
     kx = (k(:,ix(1:end-1)) + k(:,ix(2:end)))/2; %find the heat conductivity on the cell faces / edges in x direction
     kz = (k(iz(1:end-1),:) + k(iz(2:end),:))/2; %find the heat conductivity on the cell faces / edges in z directionx
