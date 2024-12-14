@@ -2,18 +2,16 @@
 % clear workspace
 clear all; close all; %clc;
 
-%Declare whether or not this is a test run. Switching this on will switch to constant coefficient variant. 
+%Declare whether or not this is a test run. Switching this on will switch
+%to constant coefficient variant. (YES/NO)
 TEST = 'NO';
 %Declare whether or not we wish to show that the total thermal energy in the system
-%is constant in the test case
-conservation = 'YES';
-NN = [100,200,400];
-
-for nn = 1:3
+%is constant in the test case (YES/NO)
+conservation = 'NO';
 
 % load model setup from image, interpolate to target grid size
 W = 16e3; % domain width (must correspond to width of image) [m]
-Nx = 200; % target grid size z-direction
+Nx = 400; % target grid size z-direction (select 100,200,400)
 h = W/Nx; % grid spacing based on image width and target grid size
 n_units = 9; % number of rock units contained in image
 [units,D,Nz] = ModelFromImage('section.tiff',n_units,W,Nx);
@@ -28,11 +26,6 @@ sa_phi = 0.23; % sand porosity proportion
 gr_phi = 0.34; % gravel porosity proportion
 si_phi = 0.15; % silt porosity proportion
 
-sa_particle_kT = 0.25; % sand particle thermal conductivity
-gr_particle_kT = 0.65; % gravel particle thermal conductivity
-si_particle_kT = 0.39; % silt particle thermal conductivity
-air_kT = 0.026; % air thermal conductivity
-
 % calculate bulk density of the sediment mass and air in the pores
 rho_sand = (1-sa_phi) * rho_particle + (sa_phi * rho_air);
 rho_grav = (1-gr_phi) * rho_particle + (gr_phi * rho_air);
@@ -45,8 +38,8 @@ matprop = [
 1       3.678               2697.6        1000                  4.172e-6              %HE1
 2       2.467               2700          874.5                 2.9e-6                %Gneiss 
 3       3.218               2703.5        1000                  5.575e-6              %HE2
-4       0.25                rho_sand      932                   1e-6                  %Sand 932 Cp
-5       0.65               rho_grav      566                   1e-6                  %Gravel 566 Cp
+4       0.25                rho_sand      932                   1e-6                  %Sand
+5       0.65                rho_grav      566                   1e-6                  %Gravel 
 6       1.3                 2091.8        878                   1e-6                  %Clay (sea)
 7       0.39                rho_silt      1088                  1e-6                  %Silt
 8       0.61                1860          1510                  1e-6                  %Mud (Sea) (average 2512 Cp for wet mud and values for silt and sand)
@@ -89,8 +82,8 @@ g0 = 9.8; % gravity [m/s2]
 aT = 1e-4; % thermal expansivity [1/C]
 
 yr = 60*60*24*365.25; % seconds per year [s]
-tend = 1000*yr; % stopping time [s] 1e6
-CFL = 0.25; % Time step limiter 
+tend = 1e6*yr; % stopping time [s] 
+CFL = 0.9; % Time step limiter 
 nop = 100; % output figure produced every 'nop' steps
 
 dTdto = 0;
@@ -105,6 +98,6 @@ switch conservation
          run('./helmsRK4.m');
 end 
 
-end
+
 
 
