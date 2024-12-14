@@ -13,7 +13,7 @@ for nn = 1:3
 
 % load model setup from image, interpolate to target grid size
 W = 16e3; % domain width (must correspond to width of image) [m]
-Nx = 400; % target grid size z-direction
+Nx = 200; % target grid size z-direction
 h = W/Nx; % grid spacing based on image width and target grid size
 n_units = 9; % number of rock units contained in image
 [units,D,Nz] = ModelFromImage('section.tiff',n_units,W,Nx);
@@ -43,14 +43,14 @@ rho_silt = (1-si_phi) * rho_particle + (si_phi * rho_air);
 matprop = [
 % unit conductivity(kT) density(rho0)   sp. heat capacity(Cp)   heat production(Hr)
 1       3.678               2697.6        1000                  4.172e-6              %HE1
-2       2.467               2750          874.5                 2.9e-6                %Gneiss 
+2       2.467               2700          874.5                 2.9e-6                %Gneiss 
 3       3.218               2703.5        1000                  5.575e-6              %HE2
 4       0.25                rho_sand      932                   1e-6                  %Sand 932 Cp
 5       0.65               rho_grav      566                   1e-6                  %Gravel 566 Cp
 6       1.3                 2091.8        878                   1e-6                  %Clay (sea)
 7       0.39                rho_silt      1088                  1e-6                  %Silt
 8       0.61                1860          1510                  1e-6                  %Mud (Sea) (average 2512 Cp for wet mud and values for silt and sand)
-9       0.026               rho_air       1012                  0];                   %air/water
+9       0.024               rho_air       1000                  0];                   %air/water
 
   
 % get coefficient fields based on spatial distribution of rock units from image
@@ -89,7 +89,7 @@ g0 = 9.8; % gravity [m/s2]
 aT = 1e-4; % thermal expansivity [1/C]
 
 yr = 60*60*24*365.25; % seconds per year [s]
-tend = 10000*yr; % stopping time [s] 1e6
+tend = 1000*yr; % stopping time [s] 1e6
 CFL = 0.25; % Time step limiter 
 nop = 100; % output figure produced every 'nop' steps
 
